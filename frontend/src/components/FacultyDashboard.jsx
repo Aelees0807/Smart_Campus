@@ -556,7 +556,7 @@ const FacultyDashboard = () => {
                   </div>
                   <div className="cls-form-group">
                     <label>Due Date</label>
-                    <input type="date" value={postForm.due_date} onChange={e => setPostForm({ ...postForm, due_date: e.target.value })} />
+                    <input type="date" min={new Date().toISOString().split("T")[0]} value={postForm.due_date} onChange={e => setPostForm({ ...postForm, due_date: e.target.value })} />
                   </div>
                 </div>
               )}
@@ -604,8 +604,9 @@ const FacultyDashboard = () => {
                     <tr key={sub.id}>
                       <td><strong>{sub.student_name}</strong><br /><small>{sub.student_id}</small></td>
                       <td className="cls-sub-content">
-                        {sub.content || "—"}
+                        {sub.content && <span>{sub.content}</span>}
                         {renderAttachments(sub.attachments)}
+                        {(!sub.content && (!sub.attachments || sub.attachments.length === 0)) && "—"}
                       </td>
                       <td><span className={`cls-sub-status ${sub.status.toLowerCase()}`}>{sub.status}</span></td>
                       <td>{sub.grade !== null && sub.grade !== undefined ? `${sub.grade} / ${submissionsModal.post.points}` : "—"}</td>

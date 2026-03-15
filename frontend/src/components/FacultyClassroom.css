@@ -514,7 +514,7 @@
 .cls-subs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .cls-subs-table th { text-align: left; padding: 10px 12px; background: #f9fafb; color: #6b7280; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #e5e7eb; }
 .cls-subs-table td { padding: 12px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-.cls-sub-content { max-width: 200px; font-size: 13px; color: #374151; }
+.cls-sub-content { max-width: 280px; font-size: 13px; color: #374151; display: flex; flex-direction: column; gap: 8px; }
 .cls-sub-status { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .cls-sub-status.submitted { background: #dbeafe; color: #1d4ed8; }
 .cls-sub-status.graded { background: #dcfce7; color: #15803d; }
