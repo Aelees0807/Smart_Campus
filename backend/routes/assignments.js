@@ -11,7 +11,7 @@ router.get('/assignments', async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
+      
     // Map id to _id for frontend compatibility
     const mappedData = data.map(item => ({ ...item, _id: item.id }));
     res.json(mappedData || []);

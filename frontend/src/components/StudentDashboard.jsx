@@ -13,7 +13,13 @@ const StudentDashboard = () => {
   const [assignments, setAssignments] = useState([]);
   const [myLeaves, setMyLeaves] = useState([]);
   const [myComplaints, setMyComplaints] = useState([]);
+  const [counsellor, setCounsellor] = useState(null);
   const [leaveForm, setLeaveForm] = useState({ reason: "", date: "" });
+  const [leaveFiles, setLeaveFiles] = useState([]);
+  const [leaveUploading, setLeaveUploading] = useState(false);
+  const [leaveSeenCount, setLeaveSeenCount] = useState(() => {
+    return parseInt(localStorage.getItem("leaveSeenCount") || "0", 10);
+  });
   const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [complaintForm, setComplaintForm] = useState({ category: "", description: "" });
   const [editingComplaintId, setEditingComplaintId] = useState(null);
@@ -45,6 +51,7 @@ const StudentDashboard = () => {
     fetchMyLeaves(id);
     fetchMyComplaints(id);
     fetchMyClassrooms(id);
+    fetchCounsellor(id);
   }, []);
 
   // --- FETCH ---
@@ -61,6 +68,14 @@ const StudentDashboard = () => {
     try {
       const res = await fetch(`http://localhost:5000/api/classrooms/student/${id}`);
       setClassrooms(await res.json());
+    } catch (e) {}
+  };
+
+  const fetchCounsellor = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/student-counsellor/${id}`);
+      const data = await res.json();
+      if (data.success) setCounsellor(data.counsellor);
     } catch (e) {}
   };
 
@@ -160,17 +175,41 @@ const StudentDashboard = () => {
   // --- LEAVES ---
   const handleLeaveSubmit = async (e) => {
     e.preventDefault();
-    const payload = { ...leaveForm, studentId, studentName };
+    setLeaveUploading(true);
+
+    // Upload files if any
+    let attachments = [];
+    if (leaveFiles.length > 0) {
+      const formData = new FormData();
+      leaveFiles.forEach(file => formData.append("files", file));
+      try {
+        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uData = await uRes.json();
+        if (uData.success) {
+          attachments = uData.files;
+        } else {
+          alert("File upload failed: " + uData.message);
+          setLeaveUploading(false);
+          return;
+        }
+      } catch (err) {
+        alert("File upload error");
+        setLeaveUploading(false);
+        return;
+      }
+    }
+
+    const payload = { ...leaveForm, studentId, studentName, attachments };
     if (editingLeaveId) {
-      await fetch(`http://localhost:5000/api/leaves/${editingLeaveId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      alert("Leave Updated!"); setEditingLeaveId(null);
+      await fetch(`http://localhost:5000/api/leaves/${editingLeaveId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, status: "Pending" }) });
+      alert("Leave Updated & Resubmitted!"); setEditingLeaveId(null);
     } else {
       await fetch("http://localhost:5000/api/leaves", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Leave Applied!");
     }
-    setLeaveForm({ reason: "", date: "" }); fetchMyLeaves(studentId);
+    setLeaveForm({ reason: "", date: "" }); setLeaveFiles([]); setLeaveUploading(false); fetchMyLeaves(studentId);
   };
-  const editLeave = (leave) => { setLeaveForm({ reason: leave.reason, date: leave.date }); setEditingLeaveId(leave._id); };
+  const editLeave = (leave) => { setLeaveForm({ reason: leave.reason, date: leave.date }); setEditingLeaveId(leave._id); setLeaveFiles([]); };
   const deleteLeave = async (id) => { if (window.confirm("Delete?")) { await fetch(`http://localhost:5000/api/leaves/${id}`, { method: "DELETE" }); fetchMyLeaves(studentId); } };
 
   // --- COMPLAINTS ---
@@ -230,6 +269,35 @@ const StudentDashboard = () => {
               <div className="card purple"><h3>Leaves</h3><p>{myLeaves.length}</p></div>
               <div className="card red"><h3>Complaints</h3><p>{myComplaints.length}</p></div>
             </div>
+
+            {/* Counsellor Info Card */}
+            {counsellor && (
+              <div style={{
+                background: "linear-gradient(135deg, #059669, #047857)",
+                borderRadius: "14px",
+                padding: "20px 24px",
+                color: "#fff",
+                marginTop: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                boxShadow: "0 4px 15px rgba(5, 150, 105, 0.3)"
+              }}>
+                <div style={{
+                  width: "50px", height: "50px", borderRadius: "50%",
+                  background: "rgba(255,255,255,0.2)", display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  fontSize: "22px", fontWeight: 700
+                }}>
+                  🛡️
+                </div>
+                <div>
+                  <div style={{ fontSize: "13px", opacity: 0.85, marginBottom: "2px" }}>Your Counsellor</div>
+                  <div style={{ fontSize: "18px", fontWeight: 700 }}>{counsellor.full_name}</div>
+                  <div style={{ fontSize: "13px", opacity: 0.8 }}>{counsellor.custom_id} · {counsellor.department}</div>
+                </div>
+              </div>
+            )}
           </>
         );
 
@@ -418,21 +486,51 @@ const StudentDashboard = () => {
         return (
           <div className="section-box">
             <h3>📝 Leave Applications</h3>
+            {counsellor && (
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", marginBottom: "15px", fontSize: "13px", color: "#166534" }}>
+                🛡️ Your leave requests will be sent to your counsellor: <strong>{counsellor.full_name} ({counsellor.custom_id})</strong>
+              </div>
+            )}
             <form className="std-form" onSubmit={handleLeaveSubmit} style={{ marginBottom: "20px", background: "#f8fafc", padding: "15px", borderRadius: "10px" }}>
               <h4 style={{ marginTop: 0 }}>{editingLeaveId ? "Edit Leave" : "Apply for New Leave"}</h4>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <input type="text" placeholder="Reason" value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} required style={{ flex: 2 }} />
-                <input type="date" value={leaveForm.date} onChange={(e) => setLeaveForm({ ...leaveForm, date: e.target.value })} required style={{ flex: 1 }} />
-                <button className="primary-btn" type="submit">{editingLeaveId ? "Update" : "Apply"}</button>
-                {editingLeaveId && <button type="button" onClick={() => { setEditingLeaveId(null); setLeaveForm({ reason: "", date: "" }); }} className="cancel-btn">Cancel</button>}
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <input type="text" placeholder="Reason" value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} required style={{ flex: 2, minWidth: "200px" }} />
+                <input type="date" value={leaveForm.date} onChange={(e) => setLeaveForm({ ...leaveForm, date: e.target.value })} required style={{ flex: 1, minWidth: "140px" }} />
+              </div>
+              <div style={{ marginTop: "10px" }}>
+                <label style={{ fontSize: "13px", color: "#6b7280", fontWeight: 600, display: "block", marginBottom: "6px" }}>📎 Attach Files (optional)</label>
+                <input type="file" multiple onChange={e => {
+                  const files = Array.from(e.target.files);
+                  if (files.length > 5) { alert('Maximum 5 files allowed'); e.target.value = ''; return; }
+                  setLeaveFiles(files);
+                }} />
+                {leaveFiles.length > 0 && (
+                  <span style={{ fontSize: "12px", color: "#059669", marginTop: "4px", display: "block" }}>✅ {leaveFiles.length} file(s) selected</span>
+                )}
+              </div>
+              <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                <button className="primary-btn" type="submit" disabled={leaveUploading}>{leaveUploading ? "Submitting..." : editingLeaveId ? "Update" : "Apply"}</button>
+                {editingLeaveId && <button type="button" onClick={() => { setEditingLeaveId(null); setLeaveForm({ reason: "", date: "" }); setLeaveFiles([]); }} className="cancel-btn">Cancel</button>}
               </div>
             </form>
             <table className="std-table">
-              <thead><tr><th>Date</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Date</th><th>Reason</th><th>Attachments</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {myLeaves.map((l) => (
                   <tr key={l._id}>
                     <td>{l.date}</td><td>{l.reason}</td>
+                    <td>
+                      {l.attachments && l.attachments.length > 0 ? (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                          {l.attachments.map((att, idx) => (
+                            <a key={idx} href={att.file_url} target="_blank" rel="noreferrer"
+                              style={{ fontSize: "12px", color: "#1d4ed8", textDecoration: "none", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px" }}>
+                              {att.file_type === "image" ? "🖼️" : att.file_type === "pdf" ? "📕" : att.file_type === "video" ? "🎥" : "📄"} {att.file_name.length > 15 ? att.file_name.substring(0, 15) + "..." : att.file_name}
+                            </a>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: "#9ca3af" }}>—</span>}
+                    </td>
                     <td><span className={`status ${l.status.toLowerCase()}`}>{l.status}</span></td>
                     <td>
                       <button className="sm-btn edit" onClick={() => editLeave(l)}>✏️</button>
@@ -492,7 +590,30 @@ const StudentDashboard = () => {
         <nav>
           <button className={activeTab === "dashboard" ? "active" : ""} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
           <button className={activeTab === "classroom" ? "active" : ""} onClick={() => { setActiveTab("classroom"); fetchMyClassrooms(studentId); }}>Classroom</button>
-          <button className={activeTab === "leaves" ? "active" : ""} onClick={() => setActiveTab("leaves")}>Leaves</button>
+          <button className={activeTab === "leaves" ? "active" : ""} onClick={() => {
+            setActiveTab("leaves");
+            const processedCount = myLeaves.filter(l => l.status === "Approved" || l.status === "Rejected").length;
+            setLeaveSeenCount(processedCount);
+            localStorage.setItem("leaveSeenCount", String(processedCount));
+          }} style={{ position: "relative" }}>
+            Leaves
+            {(() => {
+              const processedCount = myLeaves.filter(l => l.status === "Approved" || l.status === "Rejected").length;
+              const newCount = processedCount - leaveSeenCount;
+              if (newCount > 0 && activeTab !== "leaves") {
+                return (
+                  <span style={{
+                    position: "absolute", top: "6px", right: "8px",
+                    background: "#ef4444", color: "#fff", borderRadius: "50%",
+                    width: "20px", height: "20px", fontSize: "11px", fontWeight: 700,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 2px 4px rgba(239,68,68,0.4)", animation: "pulse 2s infinite"
+                  }}>{newCount}</span>
+                );
+              }
+              return null;
+            })()}
+          </button>
           <button className={activeTab === "complaints" ? "active" : ""} onClick={() => setActiveTab("complaints")}>Complaints</button>
         </nav>
         <button className="logout-link" onClick={handleLogout}>Logout</button>

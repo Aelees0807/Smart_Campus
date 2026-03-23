@@ -19,6 +19,7 @@ const classroomRoutes = require('./routes/classrooms');
 const classroomPostRoutes = require('./routes/classroom_posts');
 const submissionRoutes = require('./routes/submissions');
 const uploadRoutes = require('./routes/uploads');
+const counsellorRoutes = require('./routes/counsellor');
 
 // Register routes
 app.use('/api', authRoutes);
@@ -30,6 +31,7 @@ app.use('/api', classroomRoutes);
 app.use('/api', classroomPostRoutes);
 app.use('/api', submissionRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api', counsellorRoutes);
 
 
 // Health check endpoint

@@ -11,6 +11,7 @@ const FacultyDashboard = () => {
 
   // Assignments (old/legacy)
   const [assignments, setAssignments] = useState([]);
+  const [counsellorCount, setCounsellorCount] = useState(0);
 
   const [classrooms, setClassrooms] = useState([]);
   const [availableClasses, setAvailableClasses] = useState([]);
@@ -59,6 +60,15 @@ const FacultyDashboard = () => {
     } catch (e) {}
 
     if (id) fetchClassrooms(id);
+
+    // Fetch counselling students count
+    if (id) {
+      try {
+        const cRes = await fetch(`http://localhost:5000/api/counsellor-students/${id}`);
+        const cData = await cRes.json();
+        setCounsellorCount(Array.isArray(cData) ? cData.length : 0);
+      } catch (e) {}
+    }
   };
 
   const fetchClassrooms = async (id) => {
@@ -384,7 +394,7 @@ const FacultyDashboard = () => {
               <div className="card blue"><h3>My Classrooms</h3><p>{classrooms.length}</p></div>
               <div className="card purple"><h3>Posts Today</h3><p>{posts.length}</p></div>
               <div className="card green" onClick={goToCounselor} style={{ cursor: "pointer" }}>
-                <h3>Counselor Actions</h3><p style={{ fontSize: "18px", marginTop: "5px" }}>Manage Leaves →</p>
+                <h3>Counselor Panel</h3><p style={{ fontSize: "18px", marginTop: "5px" }}>{counsellorCount} Students →</p>
               </div>
             </div>
           </>
