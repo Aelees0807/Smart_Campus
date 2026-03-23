@@ -26,14 +26,21 @@ A full-stack academic management platform with role-based dashboards, a Google C
   - Batch derived from roll number ranges → `A1`, `B1`, `C1`, `A2`, `B2`, `C2`
   - Prevents registering current-year students before June (admissions gate)
   - Prevents registering graduated batches (> 4 years old)
-- **Faculty** — Classroom owner/co-teacher, leaf approval, complaint review.
+- **Faculty** — Classroom owner/co-teacher, leave approval, complaint review.
 - **Student** — Joins classrooms, submits assignments, files leaves and complaints.
-- **Counselor/HOD** — Dedicated panel for reviewing and approving/rejecting student leave applications and complaints.
+- **Counselor Panel** — Dedicated panel for reviewing and approving/rejecting student leave applications and complaints.
+
+### 🛡️ Counselor Allocation
+- **Counselor–Student Mapping** — Each student can be assigned a faculty counselor via the `counsellor_id` field.
+- **Counselor Dashboard** — Faculty members see only their assigned students' leave requests.
+- **Student View** — Students see their assigned counselor's name and ID on their dashboard.
 
 ### 📋 Leave Management
-- Students submit leave applications with a reason and date.
-- Counselor/Faculty review and approve or reject leaves.
-- Full history visible to both student and counselor.
+- Students submit leave applications with a reason, date, and **optional file attachments** (up to 5 files).
+- Counselor/Faculty review and **approve or reject** leaves.
+- **Edit & Resubmit** — Students can edit approved or rejected leaves; upon resubmission the status **automatically resets to Pending** for re-review.
+- **Faculty Edit Buttons** — Counselors can change the status of already-processed leaves (Approve ↔ Reject ↔ Pending) directly from the processed leaves table.
+- Full history with attachments visible to both student and counselor.
 
 ### 📣 Complaint System
 - Students submit categorised complaints.
@@ -81,8 +88,10 @@ Run the migration files in **`backend/database/`** **in this order**:
 | 4 | `add_batch_column.sql` | Adds `class` and `batch` columns to `users` |
 | 5 | `add_file_support.sql` | Adds `attachments` JSONB column to `classroom_posts` |
 | 6 | `multiple_files_support.sql` | Adds `attachments` JSONB column to `submissions` |
-| 7 | `faculty_join_migration.sql` | ⭐ New: `faculty_classroom_members` co-teacher table |
+| 7 | `faculty_join_migration.sql` | `faculty_classroom_members` co-teacher table |
 | 8 | `create_storage_bucket.sql` | Creates `campus-files` storage bucket with public access |
+| 9 | `counsellor_migration.sql` | Adds `counsellor_id` column to `users` for counselor allocation |
+| 10 | `leave_attachments_migration.sql` | Adds `attachments` JSONB column to `leaves` table |
 
 ---
 
@@ -132,7 +141,7 @@ Smart Campus/
 │       │   ├── AdminDashboard.jsx      # User & system management
 │       │   ├── FacultyDashboard.jsx    # Classroom owner + co-teacher full UI
 │       │   ├── StudentDashboard.jsx    # Classroom join + assignment submission
-│       │   └── CounselorDashboard.jsx  # Leave & complaint review
+│       │   └── CounselorDashboard.jsx  # Counselor panel: assigned students + leave review
 │       └── index.css
 │
 ├── backend/
@@ -146,8 +155,9 @@ Smart Campus/
 │   │   ├── classroom_posts.js          # Posts CRUD
 │   │   ├── submissions.js              # Student submissions + grading
 │   │   ├── uploads.js                  # Supabase Storage upload
-│   │   ├── leaves.js                   # Leave applications
-│   │   └── complaints.js               # Complaint system
+│   │   ├── leaves.js                   # Leave applications + counselor-filtered leaves
+│   │   ├── complaints.js               # Complaint system
+│   │   └── counsellor.js               # Counselor–student relationship APIs
 │   └── database/                       # SQL migration scripts
 │
 └── README.md
@@ -203,13 +213,20 @@ Smart Campus/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/leaves/:studentId` | Student's leave history |
-| `POST` | `/api/leaves` | Submit leave |
-| `PUT` | `/api/leaves/:id` | Update leave (approve/reject) |
+| `GET` | `/api/leaves/counsellor/:facultyId` | Leaves for students assigned to this counselor |
+| `POST` | `/api/leaves` | Submit leave (with optional attachments) |
+| `PUT` | `/api/leaves/:id` | Update leave (approve/reject/edit & resubmit) |
 | `DELETE` | `/api/leaves/:id` | Delete leave |
 | `GET` | `/api/complaints/:studentId` | Student's complaints |
 | `POST` | `/api/complaints` | File a complaint |
 | `PUT` | `/api/complaints/:id` | Update complaint status |
 | `DELETE` | `/api/complaints/:id` | Delete complaint |
+
+### Counselor
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/counsellor-students/:facultyId` | Students assigned to a counselor |
+| `GET` | `/api/student-counsellor/:studentId` | Get a student's assigned counselor |
 
 ---
 
