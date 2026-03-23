@@ -341,3 +341,9 @@
 .card.red {
     border-top: 4px solid #f70505;
 }
+
+/* Notification badge pulse animation */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
