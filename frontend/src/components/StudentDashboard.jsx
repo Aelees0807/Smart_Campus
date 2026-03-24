@@ -17,9 +17,6 @@ const StudentDashboard = () => {
   const [leaveForm, setLeaveForm] = useState({ reason: "", date: "" });
   const [leaveFiles, setLeaveFiles] = useState([]);
   const [leaveUploading, setLeaveUploading] = useState(false);
-  const [leaveSeenCount, setLeaveSeenCount] = useState(() => {
-    return parseInt(localStorage.getItem("leaveSeenCount") || "0", 10);
-  });
   const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [complaintForm, setComplaintForm] = useState({ category: "", description: "" });
   const [editingComplaintId, setEditingComplaintId] = useState(null);
@@ -590,17 +587,21 @@ const StudentDashboard = () => {
         <nav>
           <button className={activeTab === "dashboard" ? "active" : ""} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
           <button className={activeTab === "classroom" ? "active" : ""} onClick={() => { setActiveTab("classroom"); fetchMyClassrooms(studentId); }}>Classroom</button>
-          <button className={activeTab === "leaves" ? "active" : ""} onClick={() => {
+          <button className={activeTab === "leaves" ? "active" : ""} onClick={async () => {
             setActiveTab("leaves");
-            const processedCount = myLeaves.filter(l => l.status === "Approved" || l.status === "Rejected").length;
-            setLeaveSeenCount(processedCount);
-            localStorage.setItem("leaveSeenCount", String(processedCount));
+            // Mark all processed leaves as seen in the database
+            const unseenLeaves = myLeaves.filter(l => (l.status === "Approved" || l.status === "Rejected") && !l.student_seen);
+            if (unseenLeaves.length > 0) {
+              try {
+                await fetch(`http://localhost:5000/api/leaves/mark-seen/${studentId}`, { method: "PUT" });
+                fetchMyLeaves(studentId);
+              } catch (e) {}
+            }
           }} style={{ position: "relative" }}>
             Leaves
             {(() => {
-              const processedCount = myLeaves.filter(l => l.status === "Approved" || l.status === "Rejected").length;
-              const newCount = processedCount - leaveSeenCount;
-              if (newCount > 0 && activeTab !== "leaves") {
+              const unseenCount = myLeaves.filter(l => (l.status === "Approved" || l.status === "Rejected") && !l.student_seen).length;
+              if (unseenCount > 0 && activeTab !== "leaves") {
                 return (
                   <span style={{
                     position: "absolute", top: "6px", right: "8px",
@@ -608,7 +609,7 @@ const StudentDashboard = () => {
                     width: "20px", height: "20px", fontSize: "11px", fontWeight: 700,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     boxShadow: "0 2px 4px rgba(239,68,68,0.4)", animation: "pulse 2s infinite"
-                  }}>{newCount}</span>
+                  }}>{unseenCount}</span>
                 );
               }
               return null;
