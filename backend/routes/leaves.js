@@ -90,6 +90,28 @@ router.post('/leaves', async (req, res) => {
   }
 });
 
+// PUT /api/leaves/mark-seen/:studentId - Mark all processed leaves as seen by student
+router.put('/leaves/mark-seen/:studentId', async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const { data, error } = await supabase
+      .from('leaves')
+      .update({ student_seen: true })
+      .eq('student_id', studentId)
+      .in('status', ['Approved', 'Rejected'])
+      .eq('student_seen', false)
+      .select();
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Leaves marked as seen', count: (data || []).length });
+  } catch (err) {
+    console.error('Error marking leaves as seen:', err);
+    res.status(500).json({ success: false, message: 'Error marking leaves as seen' });
+  }
+});
+
 // PUT /api/leaves/:id - Update leave application
 router.put('/leaves/:id', async (req, res) => {
   try {
