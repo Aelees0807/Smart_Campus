@@ -21,6 +21,11 @@ const StudentDashboard = () => {
   const [complaintForm, setComplaintForm] = useState({ category: "", description: "" });
   const [editingComplaintId, setEditingComplaintId] = useState(null);
 
+  // Profile states
+  const [profileData, setProfileData] = useState({});
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+
   // Classroom states
   const [classrooms, setClassrooms] = useState([]);
   const [activeClassroom, setActiveClassroom] = useState(null);
@@ -44,6 +49,7 @@ const StudentDashboard = () => {
     if (!id) { navigate("/"); return; }
     setStudentName(name);
     setStudentId(id);
+    fetchUserProfile(id);
     fetchAssignments();
     fetchMyLeaves(id);
     fetchMyComplaints(id);
@@ -52,6 +58,13 @@ const StudentDashboard = () => {
   }, []);
 
   // --- FETCH ---
+  const fetchUserProfile = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/${id}`);
+      const data = await res.json();
+      if (data) setProfileData(data);
+    } catch(e) {}
+  };
   const fetchAssignments = async () => {
     try { const res = await fetch("http://localhost:5000/api/assignments"); setAssignments(await res.json()); } catch (e) {}
   };
@@ -97,6 +110,57 @@ const StudentDashboard = () => {
     setActiveClassroom(cls);
     setClassroomTab("stream");
     fetchPosts(cls.id);
+  };
+
+  // --- PROFILE UPDATES ---
+  const handleProfileUpdate = async (overrides = {}) => {
+    setProfileSaving(true);
+    const payload = { ...profileData, ...overrides };
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/${studentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProfileData(payload);
+        if (Object.keys(overrides).length === 0) {
+          alert("Profile updated successfully");
+          setShowProfileModal(false);
+        }
+      } else {
+        alert("Update failed: " + data.message);
+      }
+    } catch (err) {
+      alert("Error updating profile");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleProfilePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setProfileSaving(true);
+    const formData = new FormData();
+    formData.append("files", file);
+    try {
+      const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+      const uData = await uRes.json();
+      if (uData.success && uData.files.length > 0) {
+        const photo_url = uData.files[0].file_url;
+        await handleProfileUpdate({ photo_url });
+        alert("Photo uploaded successfully");
+      } else {
+        alert("Upload failed: " + uData.message);
+      }
+    } catch (err) {
+      alert("Upload error");
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   // --- JOIN CLASS ---
@@ -254,12 +318,27 @@ const StudentDashboard = () => {
       case "dashboard":
         return (
           <>
-            <div className="welcome-banner">
+            <div className="welcome-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2>Hello, {studentName}! 👋</h2>
                 <p>You are enrolled in {classrooms.length} classroom{classrooms.length !== 1 ? "s" : ""}.</p>
               </div>
-              <div className="date-badge">{new Date().toLocaleDateString("en-GB")}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 1 }}>
+                <div className="date-badge" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>{new Date().toLocaleDateString("en-GB")}</div>
+                {/* Profile Picture in Banner */}
+                <div 
+                  onClick={() => setShowProfileModal(true)} 
+                  className="banner-profile-pic"
+                  style={{ width: '70px', height: '70px', borderRadius: '50%', background: '#f8fafc', cursor: 'pointer', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 8px 16px rgba(0,0,0,0.15)' }}
+                  title="My Profile"
+                >
+                  {profileData.photo_url ? (
+                    <img src={profileData.photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: '30px', color: '#94a3b8' }}>👤</span>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="stats-grid">
               <div className="card blue"><h3>Classrooms</h3><p>{classrooms.length}</p></div>
@@ -616,6 +695,7 @@ const StudentDashboard = () => {
             })()}
           </button>
           <button className={activeTab === "complaints" ? "active" : ""} onClick={() => setActiveTab("complaints")}>Complaints</button>
+          <button className={showProfileModal ? "active" : ""} onClick={() => setShowProfileModal(true)}>Profile</button>
         </nav>
         <button className="logout-link" onClick={handleLogout}>Logout</button>
       </aside>
@@ -713,6 +793,78 @@ const StudentDashboard = () => {
             <div className="cls-preview-footer">
               <a href={previewFile.url} target="_blank" rel="noreferrer" download className="cls-download-btn">⬇️ Download File</a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====== PROFILE MODAL ====== */}
+      {showProfileModal && (
+        <div className="cls-modal-overlay">
+          <div className="cls-modal" style={{ maxWidth: '500px', width: '90%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0 }}>My Profile</h2>
+              <button className="cls-close-btn" style={{ fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none' }} onClick={() => setShowProfileModal(false)}>✕</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#f3f4f6', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px', border: '3px solid #e5e7eb' }}>
+                {profileData.photo_url ? (
+                  <img src={profileData.photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '48px' }}>👤</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <label style={{ cursor: 'pointer', color: '#2563eb', fontSize: '14px', fontWeight: '600' }}>
+                  {profileSaving ? 'Uploading...' : 'Upload Photo'}
+                  <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleProfilePhotoUpload} disabled={profileSaving} />
+                </label>
+                {profileData.photo_url && (
+                  <span style={{ cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: '600' }} onClick={() => handleProfileUpdate({ photo_url: null })}>
+                    Remove Photo
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleProfileUpdate({}); }}>
+              <div className="cls-form-group">
+                <label>Name (Immutable)</label>
+                <input value={profileData.full_name || studentName} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="cls-form-group" style={{ flex: 1 }}>
+                  <label>Student ID (Immutable)</label>
+                  <input value={profileData.custom_id || studentId} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+                </div>
+                <div className="cls-form-group" style={{ flex: 1 }}>
+                  <label>Semester/Class (Immutable)</label>
+                  <input value={profileData.class || 'N/A'} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+                </div>
+              </div>
+
+              <div className="cls-form-group">
+                <label>Email</label>
+                <input value={profileData.email || ''} onChange={e => setProfileData({...profileData, email: e.target.value})} placeholder="Enter email address" />
+              </div>
+              <div className="cls-form-group">
+                <label>Phone</label>
+                <input value={profileData.phone || ''} onChange={e => setProfileData({...profileData, phone: e.target.value})} placeholder="Enter phone number" />
+              </div>
+              <div className="cls-form-group">
+                <label>Address</label>
+                <input value={profileData.address || ''} onChange={e => setProfileData({...profileData, address: e.target.value})} placeholder="Enter address" />
+              </div>
+              <div className="cls-form-group">
+                <label>Cast / Category</label>
+                <input value={profileData.cast || ''} onChange={e => setProfileData({...profileData, cast: e.target.value})} placeholder="Enter cast or category" />
+              </div>
+
+              <div className="cls-modal-actions" style={{ marginTop: '20px' }}>
+                <button type="button" className="cls-cancel-btn" onClick={() => setShowProfileModal(false)}>Close</button>
+                <button type="submit" className="cls-submit-btn" disabled={profileSaving}>{profileSaving ? "Saving..." : "Save Profile"}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -144,11 +144,29 @@ router.post('/users', async (req, res) => {
   }
 });
 
+// GET /api/users/:id - Fetch single user
+router.get('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('custom_id', id)
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ success: false, message: 'Error fetching user' });
+  }
+});
+
 // PUT /api/users/:id - Update user
 router.put('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { full_name, email, password, role, department, phone } = req.body;
+    const { full_name, email, password, role, department, phone, photo_url, address, cast } = req.body;
     // Re-compute class and batch from the enrollment ID
     const className = role === 'Student' ? assignSection(id) : null;
     const batchName = role === 'Student' ? assignBatch(id) : null;
