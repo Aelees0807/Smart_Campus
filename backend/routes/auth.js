@@ -31,6 +31,7 @@ router.post('/login', async (req, res) => {
       success: true,
       role: users.role,
       name: users.full_name,
+      department: users.department || null,
       message: 'Login successful'
     });
 
