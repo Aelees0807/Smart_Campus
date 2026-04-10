@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS complaints (
   student_id TEXT NOT NULL,
   category TEXT NOT NULL,
   description TEXT NOT NULL,
+  attachments JSONB DEFAULT '[]'::jsonb,
   status TEXT DEFAULT 'Open' CHECK (status IN ('Open', 'Resolved')),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

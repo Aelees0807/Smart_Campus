@@ -14,6 +14,7 @@ const PeonDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [loading, setLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null); // { url, name, type }
 
   // Profile states
   const [profileData, setProfileData] = useState({});
@@ -171,6 +172,20 @@ const PeonDashboard = () => {
     return { background: c.bg, color: c.color, padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 600 };
   };
 
+  const renderAttachments = (attachments) => {
+    if (!attachments || attachments.length === 0) return null;
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px', marginLeft: "52px", marginBottom: "12px" }}>
+        {attachments.map((att, idx) => (
+          <span key={idx} onClick={() => setPreviewFile({ url: att.file_url, name: att.file_name, type: att.file_type })}
+            style={{ fontSize: "12px", color: "#1d4ed8", textDecoration: "none", background: "#f0fdf4", padding: "4px 10px", borderRadius: "6px", cursor: "pointer", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", gap: "6px" }}>
+            {att.file_type === "image" ? "🖼️" : att.file_type === "pdf" ? "📕" : att.file_type === "video" ? "🎥" : "📄"} {att.file_name.length > 20 ? att.file_name.substring(0, 20) + "..." : att.file_name}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const renderComplaintCard = (c, showActions = true) => (
     <div key={c._id} style={{
       border: "1px solid #e2e8f0", borderRadius: "12px", padding: "18px 22px",
@@ -201,6 +216,7 @@ const PeonDashboard = () => {
       <p style={{ margin: "0 0 12px 52px", fontSize: "14px", color: "#475569", lineHeight: 1.5 }}>
         {c.description}
       </p>
+      {renderAttachments(c.attachments)}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginLeft: "52px", flexWrap: "wrap", gap: "10px" }}>
         <span style={{ fontSize: "12px", color: "#94a3b8" }}>🕐 {formatDate(c.created_at)}</span>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -357,17 +373,18 @@ const PeonDashboard = () => {
               <div style={{ overflowX: "auto" }}>
                 <table className="fac-table" style={{ width: "100%" }}>
                   <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Category</th>
-                      <th>Description</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map(c => (
+                      <tr>
+                        <th>Student</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Proof</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(c => (
                       <tr key={c._id}>
                         <td>
                           <strong>{c.student_name}</strong><br />
@@ -375,6 +392,18 @@ const PeonDashboard = () => {
                         </td>
                         <td><span style={categoryBadge(c.category)}>{c.category}</span></td>
                         <td style={{ maxWidth: "280px" }}>{c.description}</td>
+                        <td>
+                          {c.attachments && c.attachments.length > 0 ? (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                              {c.attachments.map((att, idx) => (
+                                <span key={idx} onClick={() => setPreviewFile({ url: att.file_url, name: att.file_name, type: att.file_type })}
+                                  style={{ fontSize: "12px", color: "#1d4ed8", textDecoration: "none", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px", cursor: "pointer" }}>
+                                  {att.file_type === "image" ? "🖼️" : att.file_type === "pdf" ? "📕" : att.file_type === "video" ? "🎥" : "📄"} {att.file_name.length > 15 ? att.file_name.substring(0, 15) + "..." : att.file_name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : <span style={{ color: "#9ca3af" }}>—</span>}
+                        </td>
                         <td style={{ whiteSpace: "nowrap", fontSize: "13px" }}>{formatDate(c.created_at)}</td>
                         <td><span className={`status ${statusBadgeClass(c.status)}`}>{c.status}</span></td>
                         <td>
@@ -477,6 +506,29 @@ const PeonDashboard = () => {
                 <button type="submit" className="cls-submit-btn" disabled={profileSaving}>{profileSaving ? "Saving..." : "Save Profile"}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ====== FILE PREVIEW MODAL ====== */}
+      {previewFile && (
+        <div className="cls-modal-overlay" onClick={() => setPreviewFile(null)} style={{ zIndex: 3000 }}>
+          <div className="cls-preview-modal" onClick={e => e.stopPropagation()} style={{ background: "#fff", padding: "20px", borderRadius: "12px", maxWidth: "90%", maxHeight: "90vh", display: "flex", flexDirection: "column", position: "relative" }}>
+            <div className="cls-preview-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px", borderBottom: "1px solid #e5e7eb", paddingBottom: "10px" }}>
+              <h3 style={{ margin: 0, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1, paddingRight: "20px" }}>{previewFile.name}</h3>
+              <button className="cls-close-btn" style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer" }} onClick={() => setPreviewFile(null)}>✕</button>
+            </div>
+            <div className="cls-preview-body" style={{ flex: 1, overflow: "auto", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>
+              {previewFile.type === "image" && <img src={previewFile.url} alt={previewFile.name} style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain", display: "block", margin: "0 auto" }} />}
+              {previewFile.type === "video" && <video src={previewFile.url} controls style={{ maxWidth: "100%", maxHeight: "70vh", display: "block", margin: "0 auto" }} />}
+              {previewFile.type === "pdf" && <iframe src={previewFile.url} title={previewFile.name} style={{ width: "100%", height: "70vh", border: "none" }} />}
+              {previewFile.type === "document" && (
+                <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewFile.url)}`} title={previewFile.name} style={{ width: "100%", height: "70vh", border: "none" }} />
+              )}
+            </div>
+            <div className="cls-preview-footer" style={{ marginTop: "15px", textAlign: "right" }}>
+              <a href={previewFile.url} target="_blank" rel="noreferrer" download className="cls-download-btn" style={{ textDecoration: "none", background: "#e5e7eb", padding: "8px 16px", borderRadius: "6px", color: "#374151", fontWeight: 600 }}>⬇️ Download File</a>
+            </div>
           </div>
         </div>
       )}
