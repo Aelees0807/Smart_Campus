@@ -103,7 +103,7 @@ router.get('/complaints/:studentId', async (req, res) => {
 // POST /api/complaints - Create new complaint
 router.post('/complaints', async (req, res) => {
   try {
-    const { studentId, category, description } = req.body;
+    const { studentId, category, description, attachments } = req.body;
 
     const { data, error } = await supabase
       .from('complaints')
@@ -111,6 +111,7 @@ router.post('/complaints', async (req, res) => {
         student_id: studentId,
         category,
         description,
+        attachments,
         status: 'Open'
       }])
       .select();
@@ -128,12 +129,13 @@ router.post('/complaints', async (req, res) => {
 router.put('/complaints/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { category, description, status } = req.body;
+    const { category, description, status, attachments } = req.body;
 
     const updateData = {};
     if (category) updateData.category = category;
     if (description) updateData.description = description;
     if (status) updateData.status = status;
+    if (attachments !== undefined) updateData.attachments = attachments;
 
     console.log(`[Complaints] Updating complaint ${id} with:`, updateData);
 

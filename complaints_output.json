@@ -1,0 +1,197 @@
+[
+  {
+    "id": "0682d9f5-5583-40df-b97a-0a392d08e23c",
+    "student_id": "TEST-ID",
+    "category": "Library",
+    "description": "Test attachment problem",
+    "status": "Open",
+    "created_at": "2026-04-10T16:40:53.926516+00:00",
+    "attachments": [
+      {
+        "file_url": "http://test.com",
+        "file_name": "test.png",
+        "file_type": "image"
+      }
+    ],
+    "_id": "0682d9f5-5583-40df-b97a-0a392d08e23c",
+    "student_name": "TEST-ID",
+    "student_department": "—",
+    "student_class": "—"
+  },
+  {
+    "id": "451fdce0-21dd-45c0-974c-8a778dbba27d",
+    "student_id": "24DCE020",
+    "category": "Library",
+    "description": "this website animation not working",
+    "status": "Open",
+    "created_at": "2026-04-10T16:34:23.352603+00:00",
+    "attachments": [],
+    "_id": "451fdce0-21dd-45c0-974c-8a778dbba27d",
+    "student_name": "Aelees Bhuva",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  },
+  {
+    "id": "da0c13c4-bcda-46a1-a696-d34ee90aa04b",
+    "student_id": "24DCE020",
+    "category": "Cleanliness",
+    "description": "class326 not clean\n",
+    "status": "Resolved",
+    "created_at": "2026-04-10T16:33:46.099022+00:00",
+    "attachments": [
+      {
+        "file_url": "https://stqirfwyxugwxvauthfq.supabase.co/storage/v1/object/public/campus-files/classroom-files/1775838822063_24DCE020.pdf",
+        "file_name": "24DCE020.pdf",
+        "file_size": 2561325,
+        "file_type": "pdf"
+      }
+    ],
+    "_id": "da0c13c4-bcda-46a1-a696-d34ee90aa04b",
+    "student_name": "Aelees Bhuva",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  },
+  {
+    "id": "c83dfbcb-fe9b-4ba5-83da-d68611487bc7",
+    "student_id": "24ME050",
+    "category": "Library",
+    "description": "rrrrrrrrr",
+    "status": "Closed",
+    "created_at": "2026-04-10T06:56:50.082605+00:00",
+    "attachments": [],
+    "_id": "c83dfbcb-fe9b-4ba5-83da-d68611487bc7",
+    "student_name": "ME050",
+    "student_department": "Mechanical Engineering",
+    "student_class": "4ME1"
+  },
+  {
+    "id": "9262939c-0515-4f64-b65a-aa012b0d76f2",
+    "student_id": "24DCE020",
+    "category": "Library",
+    "description": "rrrrrrrrrrr",
+    "status": "Resolved",
+    "created_at": "2026-04-10T06:56:08.925965+00:00",
+    "attachments": [],
+    "_id": "9262939c-0515-4f64-b65a-aa012b0d76f2",
+    "student_name": "Aelees Bhuva",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  },
+  {
+    "id": "90ed94a6-be31-4a0d-ba4a-715103dead1f",
+    "student_id": "24ME050",
+    "category": "Lab",
+    "description": "oiuytf",
+    "status": "Open",
+    "created_at": "2026-04-10T06:25:05.064752+00:00",
+    "attachments": [],
+    "_id": "90ed94a6-be31-4a0d-ba4a-715103dead1f",
+    "student_name": "ME050",
+    "student_department": "Mechanical Engineering",
+    "student_class": "4ME1"
+  },
+  {
+    "id": "fca70637-7e55-404a-b3d9-971d86fc4e12",
+    "student_id": "24DIT001",
+    "category": "Cleanliness",
+    "description": "yuk",
+    "status": "Open",
+    "created_at": "2026-04-09T08:47:12.356648+00:00",
+    "attachments": [],
+    "_id": "fca70637-7e55-404a-b3d9-971d86fc4e12",
+    "student_name": "DIT001",
+    "student_department": "Information technology",
+    "student_class": "4IT1"
+  },
+  {
+    "id": "6dc75d35-9392-403b-8b59-fa4237b67057",
+    "student_id": "24DIT001",
+    "category": "Cleanliness",
+    "description": "yuk",
+    "status": "Resolved",
+    "created_at": "2026-04-09T08:47:12.107438+00:00",
+    "attachments": [],
+    "_id": "6dc75d35-9392-403b-8b59-fa4237b67057",
+    "student_name": "DIT001",
+    "student_department": "Information technology",
+    "student_class": "4IT1"
+  },
+  {
+    "id": "605af953-d6d9-44cf-ac55-f5f635934d8c",
+    "student_id": "24DIT001",
+    "category": "Cleanliness",
+    "description": "yuk",
+    "status": "Resolved",
+    "created_at": "2026-04-09T08:47:09.872199+00:00",
+    "attachments": [],
+    "_id": "605af953-d6d9-44cf-ac55-f5f635934d8c",
+    "student_name": "DIT001",
+    "student_department": "Information technology",
+    "student_class": "4IT1"
+  },
+  {
+    "id": "a5ebcf66-a39f-4313-abdb-a3c8385983d2",
+    "student_id": "24DIT001",
+    "category": "Cleanliness",
+    "description": "yuk",
+    "status": "Open",
+    "created_at": "2026-04-09T08:47:06.078301+00:00",
+    "attachments": [],
+    "_id": "a5ebcf66-a39f-4313-abdb-a3c8385983d2",
+    "student_name": "DIT001",
+    "student_department": "Information technology",
+    "student_class": "4IT1"
+  },
+  {
+    "id": "b7ba12c6-4a27-461e-9a65-a6112c21aeac",
+    "student_id": "24DCS001",
+    "category": "Lab",
+    "description": "LAB 209 , PC12 NOT WORKING",
+    "status": "Open",
+    "created_at": "2026-04-09T08:39:20.204202+00:00",
+    "attachments": [],
+    "_id": "b7ba12c6-4a27-461e-9a65-a6112c21aeac",
+    "student_name": "DCS001",
+    "student_department": "Computer Science Engineering",
+    "student_class": "4CS1"
+  },
+  {
+    "id": "6afea480-6b87-4872-8db6-d1f90c947462",
+    "student_id": "24DCE001",
+    "category": "Cleanliness",
+    "description": "class 325 is not clean.",
+    "status": "Closed",
+    "created_at": "2026-04-09T08:32:30.777646+00:00",
+    "attachments": [],
+    "_id": "6afea480-6b87-4872-8db6-d1f90c947462",
+    "student_name": "Dhruv Adhiya",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  },
+  {
+    "id": "d0de1544-4303-465b-b32b-e6f862cb8de4",
+    "student_id": "24DCE020",
+    "category": "Library",
+    "description": "WEBHOOK BOOK BY ORACLE NOT PRESENT",
+    "status": "Resolved",
+    "created_at": "2026-04-08T09:06:19.594679+00:00",
+    "attachments": [],
+    "_id": "d0de1544-4303-465b-b32b-e6f862cb8de4",
+    "student_name": "Aelees Bhuva",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  },
+  {
+    "id": "a1e74748-56c0-4fa3-acbd-860cb3a66966",
+    "student_id": "24DCE020",
+    "category": "Lab",
+    "description": "lab 312 , 1st pc not working",
+    "status": "Resolved",
+    "created_at": "2026-03-19T08:05:19.384935+00:00",
+    "attachments": [],
+    "_id": "a1e74748-56c0-4fa3-acbd-860cb3a66966",
+    "student_name": "Aelees Bhuva",
+    "student_department": "Computer Engineering",
+    "student_class": "4CE1"
+  }
+]

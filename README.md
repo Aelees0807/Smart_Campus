@@ -29,6 +29,7 @@ A full-stack academic management platform with role-based dashboards, a Google C
 - **Faculty** — Classroom owner/co-teacher, leave approval, complaint review.
 - **Student** — Joins classrooms, submits assignments, files leaves and complaints.
 - **Counselor Panel** — Dedicated panel for reviewing and approving/rejecting student leave applications and complaints.
+- **Librarian Dashboard** — Dedicated panel for viewing and managing library-category complaints with search and status filters.
 
 ### 🛡️ Counselor Allocation
 - **Counselor–Student Mapping** — Each student can be assigned a faculty counselor via the `counsellor_id` field.
@@ -43,8 +44,10 @@ A full-stack academic management platform with role-based dashboards, a Google C
 - Full history with attachments visible to both student and counselor.
 
 ### 📣 Complaint System
-- Students submit categorised complaints.
-- Faculty/Counselor can update the status (`Open` → `Resolved`).
+- Students submit categorised complaints (e.g. Library, Hostel, Canteen, Transport) with an **optional file attachment** for proof (images, PDFs, etc.).
+- Faculty/Counselor can update the status (`Open` → `In Progress` → `Resolved` → `Closed`).
+- **Librarian Dashboard** — Librarians see all complaints categorised as "library" (case-insensitive fetch), with search and status filters.
+- Category matching uses a **case-insensitive** query (`ilike`) so complaints stored as `"library"`, `"Library"`, or `"LIBRARY"` all appear correctly.
 
 ### 🔐 Authentication
 - Role-based login (`Admin`, `Faculty`, `Student`, `Counselor`, etc.)
@@ -141,6 +144,7 @@ Smart Campus/
 │       │   ├── AdminDashboard.jsx      # User & system management
 │       │   ├── FacultyDashboard.jsx    # Classroom owner + co-teacher full UI
 │       │   ├── StudentDashboard.jsx    # Classroom join + assignment submission
+│       │   ├── LibrarianDashboard.jsx  # Library complaints view with search & status filters
 │       │   └── CounselorDashboard.jsx  # Counselor panel: assigned students + leave review
 │       └── index.css
 │
@@ -218,6 +222,7 @@ Smart Campus/
 | `PUT` | `/api/leaves/:id` | Update leave (approve/reject/edit & resubmit) |
 | `DELETE` | `/api/leaves/:id` | Delete leave |
 | `GET` | `/api/complaints/:studentId` | Student's complaints |
+| `GET` | `/api/complaints/all` | All complaints (supports `?category=Library`, `?status=Open`, `?exclude_category=X` filters; category match is case-insensitive) |
 | `POST` | `/api/complaints` | File a complaint |
 | `PUT` | `/api/complaints/:id` | Update complaint status |
 | `DELETE` | `/api/complaints/:id` | Delete complaint |

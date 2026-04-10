@@ -20,6 +20,8 @@ const StudentDashboard = () => {
   const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [complaintForm, setComplaintForm] = useState({ category: "", description: "" });
   const [editingComplaintId, setEditingComplaintId] = useState(null);
+  const [complaintFiles, setComplaintFiles] = useState([]);
+  const [complaintUploading, setComplaintUploading] = useState(false);
 
   // Profile states
   const [profileData, setProfileData] = useState({});
@@ -268,7 +270,12 @@ const StudentDashboard = () => {
       await fetch("http://localhost:5000/api/leaves", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Leave Applied!");
     }
-    setLeaveForm({ reason: "", date: "" }); setLeaveFiles([]); setLeaveUploading(false); fetchMyLeaves(studentId);
+    setLeaveForm({ reason: "", date: "" }); 
+    setLeaveFiles([]); 
+    setLeaveUploading(false); 
+    fetchMyLeaves(studentId);
+    const leaveInput = document.getElementById('leaveFilesInput');
+    if (leaveInput) leaveInput.value = '';
   };
   const editLeave = (leave) => { setLeaveForm({ reason: leave.reason, date: leave.date }); setEditingLeaveId(leave._id); setLeaveFiles([]); };
   const deleteLeave = async (id) => { if (window.confirm("Delete?")) { await fetch(`http://localhost:5000/api/leaves/${id}`, { method: "DELETE" }); fetchMyLeaves(studentId); } };
@@ -276,7 +283,30 @@ const StudentDashboard = () => {
   // --- COMPLAINTS ---
   const handleComplaintSubmit = async () => {
     if (!complaintForm.category || !complaintForm.description) return alert("Fill all fields");
-    const payload = { ...complaintForm, studentId };
+    setComplaintUploading(true);
+
+    let attachments = [];
+    if (complaintFiles.length > 0) {
+      const formData = new FormData();
+      complaintFiles.forEach(file => formData.append("files", file));
+      try {
+        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uData = await uRes.json();
+        if (uData.success) {
+          attachments = uData.files;
+        } else {
+          alert("File upload failed: " + uData.message);
+          setComplaintUploading(false);
+          return;
+        }
+      } catch (err) {
+        alert("File upload error");
+        setComplaintUploading(false);
+        return;
+      }
+    }
+
+    const payload = { ...complaintForm, studentId, attachments };
     if (editingComplaintId) {
       await fetch(`http://localhost:5000/api/complaints/${editingComplaintId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Updated!"); setEditingComplaintId(null);
@@ -284,9 +314,14 @@ const StudentDashboard = () => {
       await fetch("http://localhost:5000/api/complaints", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Submitted!");
     }
-    setComplaintForm({ category: "", description: "" }); fetchMyComplaints(studentId);
+    setComplaintForm({ category: "", description: "" }); 
+    setComplaintFiles([]); 
+    setComplaintUploading(false); 
+    fetchMyComplaints(studentId);
+    const fileInput = document.getElementById('complaintFilesInput');
+    if (fileInput) fileInput.value = '';
   };
-  const editComplaint = (c) => { setComplaintForm({ category: c.category, description: c.description }); setEditingComplaintId(c._id); };
+  const editComplaint = (c) => { setComplaintForm({ category: c.category, description: c.description }); setEditingComplaintId(c._id); setComplaintFiles([]); };
   const deleteComplaint = async (id) => { if (window.confirm("Delete?")) { await fetch(`http://localhost:5000/api/complaints/${id}`, { method: "DELETE" }); fetchMyComplaints(studentId); } };
 
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
@@ -633,17 +668,40 @@ const StudentDashboard = () => {
                 <option value="Other">Other</option>
               </select>
               <textarea rows="3" placeholder="Describe..." value={complaintForm.description} onChange={(e) => setComplaintForm({ ...complaintForm, description: e.target.value })}></textarea>
+              <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+                <label style={{ fontSize: "13px", color: "#6b7280", fontWeight: 600, display: "block", marginBottom: "6px" }}>📎 Attach Proof/Files (optional)</label>
+                <input id="complaintFilesInput" type="file" multiple onChange={e => {
+                  const files = Array.from(e.target.files);
+                  if (files.length > 5) { alert('Maximum 5 files allowed'); e.target.value = ''; return; }
+                  setComplaintFiles(files);
+                }} />
+                {complaintFiles.length > 0 && (
+                  <span style={{ fontSize: "12px", color: "#059669", marginTop: "4px", display: "block" }}>✅ {complaintFiles.length} file(s) selected</span>
+                )}
+              </div>
               <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-                <button className="primary-btn" onClick={handleComplaintSubmit} style={{ background: "#ef4444" }}>{editingComplaintId ? "Update" : "Submit"}</button>
-                {editingComplaintId && <button onClick={() => { setEditingComplaintId(null); setComplaintForm({ category: "", description: "" }); }} className="cancel-btn">Cancel</button>}
+                <button className="primary-btn" onClick={handleComplaintSubmit} disabled={complaintUploading} style={{ background: "#ef4444" }}>{complaintUploading ? "Submitting..." : editingComplaintId ? "Update" : "Submit"}</button>
+                {editingComplaintId && <button onClick={() => { setEditingComplaintId(null); setComplaintForm({ category: "", description: "" }); setComplaintFiles([]); }} className="cancel-btn">Cancel</button>}
               </div>
             </div>
             <table className="std-table">
-              <thead><tr><th>Category</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Category</th><th>Description</th><th>Proof</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {myComplaints.map((c) => (
                   <tr key={c._id}>
                     <td><strong>{c.category}</strong></td><td>{c.description}</td>
+                    <td>
+                      {c.attachments && c.attachments.length > 0 ? (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                          {c.attachments.map((att, idx) => (
+                            <span key={idx} onClick={() => setPreviewFile({ url: att.file_url, name: att.file_name, type: att.file_type })}
+                              style={{ fontSize: "12px", color: "#1d4ed8", textDecoration: "none", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px", cursor: "pointer" }}>
+                              {att.file_type === "image" ? "🖼️" : att.file_type === "pdf" ? "📕" : att.file_type === "video" ? "🎥" : "📄"} {att.file_name.length > 15 ? att.file_name.substring(0, 15) + "..." : att.file_name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: "#9ca3af" }}>—</span>}
+                    </td>
                     <td><span className={`status ${c.status.toLowerCase() === "open" ? "rejected" : "approved"}`}>{c.status}</span></td>
                     <td>
                       <button className="sm-btn edit" onClick={() => editComplaint(c)}>✏️</button>
