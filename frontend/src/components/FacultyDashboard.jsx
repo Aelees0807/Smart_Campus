@@ -40,13 +40,27 @@ const FacultyDashboard = () => {
   const [enrollForm, setEnrollForm] = useState({ className: "", batch: "All" });
   const [enrolling, setEnrolling] = useState(false);
 
+  // Profile states
+  const [profileData, setProfileData] = useState({});
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+
   useEffect(() => {
     const name = localStorage.getItem("userName");
     const id = localStorage.getItem("userId");
     if (name) setFacultyName(name);
     if (id) setFacultyId(id);
     fetchData(id);
+    if (id) fetchFacultyProfile(id);
   }, []);
+
+  const fetchFacultyProfile = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/${id}`);
+      const data = await res.json();
+      if (data) setProfileData(data);
+    } catch(e) {}
+  };
 
   const fetchData = async (id) => {
     try {
@@ -357,6 +371,56 @@ const FacultyDashboard = () => {
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
   const goToCounselor = () => navigate("/counselor");
 
+  // --- PROFILE UPDATES ---
+  const handleProfileUpdate = async (overrides = {}) => {
+    setProfileSaving(true);
+    const payload = { ...profileData, ...overrides };
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/${facultyId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProfileData(payload);
+        if (Object.keys(overrides).length === 0) {
+          alert("Profile updated successfully");
+          setShowProfileModal(false);
+        }
+      } else {
+        alert("Update failed: " + data.message);
+      }
+    } catch (err) {
+      alert("Error updating profile");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleProfilePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setProfileSaving(true);
+    const formData = new FormData();
+    formData.append("files", file);
+    try {
+      const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+      const uData = await uRes.json();
+      if (uData.success && uData.files.length > 0) {
+        const photo_url = uData.files[0].file_url;
+        await handleProfileUpdate({ photo_url });
+        alert("Photo uploaded successfully");
+      } else {
+        alert("Upload failed: " + uData.message);
+      }
+    } catch (err) {
+      alert("Upload error");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : null;
   const postTypeIcon = { Announcement: "📢", Assignment: "📝", Material: "📄" };
   const postTypeBadgeClass = { Announcement: "badge-ann", Assignment: "badge-asgn", Material: "badge-mat" };
@@ -384,10 +448,22 @@ const FacultyDashboard = () => {
       case "dashboard":
         return (
           <>
-            <div className="welcome-banner">
+            <div className="welcome-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2>Welcome, Prof. {facultyName}! 👨‍🏫</h2>
                 <p>Manage your classroom and students efficiently.</p>
+              </div>
+              <div
+                onClick={() => setShowProfileModal(true)}
+                className="banner-profile-pic"
+                style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#f8fafc', cursor: 'pointer', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', flexShrink: 0, transition: 'all 0.2s ease' }}
+                title="My Profile"
+              >
+                {profileData.photo_url ? (
+                  <img src={profileData.photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '30px', color: '#94a3b8' }}>👤</span>
+                )}
               </div>
             </div>
             <div className="stats-grid">
@@ -733,6 +809,7 @@ const FacultyDashboard = () => {
         <nav>
           <button className={activeTab === "dashboard" ? "active" : ""} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
           <button className={activeTab === "classroom" ? "active" : ""} onClick={() => { setActiveTab("classroom"); fetchClassrooms(facultyId); }}>Classroom</button>
+          <button className={showProfileModal ? "active" : ""} onClick={() => setShowProfileModal(true)}>Profile</button>
           <div className="nav-divider" style={{ margin: "10px 0", borderTop: "1px solid #e2e8f0" }}></div>
           <button className="counselor-link" onClick={goToCounselor} style={{ color: "#059669" }}>🛡️ Counselor Panel</button>
         </nav>
@@ -957,6 +1034,78 @@ const FacultyDashboard = () => {
             <div className="cls-preview-footer">
               <a href={previewFile.url} target="_blank" rel="noreferrer" download className="cls-download-btn">⬇️ Download File</a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====== PROFILE MODAL ====== */}
+      {showProfileModal && (
+        <div className="cls-modal-overlay">
+          <div className="cls-modal" style={{ maxWidth: '500px', width: '90%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0 }}>My Profile</h2>
+              <button className="cls-close-btn" style={{ fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none' }} onClick={() => setShowProfileModal(false)}>✕</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#f3f4f6', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px', border: '3px solid #e5e7eb' }}>
+                {profileData.photo_url ? (
+                  <img src={profileData.photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '48px' }}>👤</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <label style={{ cursor: 'pointer', color: '#4f46e5', fontSize: '14px', fontWeight: '600' }}>
+                  {profileSaving ? 'Uploading...' : 'Upload Photo'}
+                  <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleProfilePhotoUpload} disabled={profileSaving} />
+                </label>
+                {profileData.photo_url && (
+                  <span style={{ cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: '600' }} onClick={() => handleProfileUpdate({ photo_url: null })}>
+                    Remove Photo
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleProfileUpdate({}); }}>
+              <div className="cls-form-group">
+                <label>Name</label>
+                <input value={profileData.full_name || facultyName} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="cls-form-group" style={{ flex: 1 }}>
+                  <label>Faculty ID</label>
+                  <input value={profileData.custom_id || facultyId} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+                </div>
+                <div className="cls-form-group" style={{ flex: 1 }}>
+                  <label>Department</label>
+                  <input value={profileData.department || 'N/A'} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
+                </div>
+              </div>
+
+              <div className="cls-form-group">
+                <label>Email</label>
+                <input value={profileData.email || ''} onChange={e => setProfileData({...profileData, email: e.target.value})} placeholder="Enter email address" />
+              </div>
+              <div className="cls-form-group">
+                <label>Phone</label>
+                <input value={profileData.phone || ''} onChange={e => setProfileData({...profileData, phone: e.target.value})} placeholder="Enter phone number" />
+              </div>
+              <div className="cls-form-group">
+                <label>Address</label>
+                <input value={profileData.address || ''} onChange={e => setProfileData({...profileData, address: e.target.value})} placeholder="Enter address" />
+              </div>
+              <div className="cls-form-group">
+                <label>Cast / Category</label>
+                <input value={profileData.cast || ''} onChange={e => setProfileData({...profileData, cast: e.target.value})} placeholder="Enter cast or category" />
+              </div>
+
+              <div className="cls-modal-actions" style={{ marginTop: '20px' }}>
+                <button type="button" className="cls-cancel-btn" onClick={() => setShowProfileModal(false)}>Close</button>
+                <button type="submit" className="cls-submit-btn" disabled={profileSaving}>{profileSaving ? "Saving..." : "Save Profile"}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

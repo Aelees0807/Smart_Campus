@@ -629,6 +629,7 @@ const StudentDashboard = () => {
                 <option value="">Select Category</option>
                 <option value="Cleanliness">Cleanliness</option>
                 <option value="Lab">Lab Issue</option>
+                <option value="Library">Library</option>
                 <option value="Other">Other</option>
               </select>
               <textarea rows="3" placeholder="Describe..." value={complaintForm.description} onChange={(e) => setComplaintForm({ ...complaintForm, description: e.target.value })}></textarea>
@@ -829,16 +830,16 @@ const StudentDashboard = () => {
 
             <form onSubmit={(e) => { e.preventDefault(); handleProfileUpdate({}); }}>
               <div className="cls-form-group">
-                <label>Name (Immutable)</label>
+                <label>Name</label>
                 <input value={profileData.full_name || studentName} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div className="cls-form-group" style={{ flex: 1 }}>
-                  <label>Student ID (Immutable)</label>
+                  <label>Student ID</label>
                   <input value={profileData.custom_id || studentId} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
                 </div>
                 <div className="cls-form-group" style={{ flex: 1 }}>
-                  <label>Semester/Class (Immutable)</label>
+                  <label>Semester/Class</label>
                   <input value={profileData.class || 'N/A'} disabled style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }} />
                 </div>
               </div>
