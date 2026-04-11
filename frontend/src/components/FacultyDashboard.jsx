@@ -65,12 +65,12 @@ const FacultyDashboard = () => {
 
   const fetchData = async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/assignments");
+      const res = await fetch(`${API_BASE_URL}/api/assignments`);
       setAssignments(await res.json());
     } catch (e) {}
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/available-classes");
+      const res = await fetch(`${API_BASE_URL}/api/available-classes`);
       setAvailableClasses(await res.json());
     } catch (e) {}
 
@@ -126,7 +126,7 @@ const FacultyDashboard = () => {
   // --- CREATE CLASSROOM ---
   const handleCreateClass = async (e) => {
     e.preventDefault();
-    const res = await fetch(`${API_BASE_URL}/api/classrooms", {
+    const res = await fetch(`${API_BASE_URL}/api/classrooms`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...classForm, faculty_id: facultyId, faculty_name: facultyName }),
@@ -145,7 +145,7 @@ const FacultyDashboard = () => {
     if (!joinCode.trim()) return alert("Please enter a class code");
     setJoining(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/classrooms/faculty-join", {
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/faculty-join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -268,7 +268,7 @@ const FacultyDashboard = () => {
       const formData = new FormData();
       postFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -308,7 +308,7 @@ const FacultyDashboard = () => {
         }),
       });
     } else {
-      res = await fetch(`${API_BASE_URL}/api/classroom-posts", {
+      res = await fetch(`${API_BASE_URL}/api/classroom-posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -406,7 +406,7 @@ const FacultyDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;

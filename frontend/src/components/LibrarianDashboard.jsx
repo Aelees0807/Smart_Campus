@@ -41,7 +41,7 @@ const LibrarianDashboard = () => {
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/complaints/all?category=Library");
+      const res = await fetch(`${API_BASE_URL}/api/complaints/all?category=Library`);
       const data = await res.json();
       if (Array.isArray(data)) setComplaints(data);
     } catch (e) {
@@ -106,7 +106,7 @@ const LibrarianDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;

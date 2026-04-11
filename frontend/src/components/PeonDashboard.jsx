@@ -46,7 +46,7 @@ const PeonDashboard = () => {
     setLoading(true);
     try {
       const department = dept || userDepartment;
-      let url = `${API_BASE_URL}/api/complaints/all?exclude_category=Library";
+      let url = `${API_BASE_URL}/api/complaints/all?exclude_category=Library`;
       if (department) url += `&department=${encodeURIComponent(department)}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -113,7 +113,7 @@ const PeonDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;
