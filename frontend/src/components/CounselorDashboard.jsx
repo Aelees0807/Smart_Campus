@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
 import "./FacultyDashboard.css";
 
@@ -26,20 +27,20 @@ const CounselorDashboard = () => {
   const fetchLeaves = async (id) => {
     try {
       const fid = id || facultyId;
-      const res = await fetch(`http://localhost:5000/api/leaves/counsellor/${fid}`);
+      const res = await fetch(`${API_BASE_URL}/api/leaves/counsellor/${fid}`);
       setLeaveRequests(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchCounsellorStudents = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/counsellor-students/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/counsellor-students/${id}`);
       setCounsellorStudents(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const handleLeaveAction = async (id, status) => {
-    await fetch(`http://localhost:5000/api/leaves/${id}`, {
+    await fetch(`${API_BASE_URL}/api/leaves/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status })

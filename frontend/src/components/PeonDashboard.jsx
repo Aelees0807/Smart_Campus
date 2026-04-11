@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
 import "./FacultyDashboard.css";
 import "./StudentClassroom.css";
@@ -35,7 +36,7 @@ const PeonDashboard = () => {
 
   const fetchUserProfile = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`);
       const data = await res.json();
       if (data) setProfileData(data);
     } catch (e) {}
@@ -45,7 +46,7 @@ const PeonDashboard = () => {
     setLoading(true);
     try {
       const department = dept || userDepartment;
-      let url = "http://localhost:5000/api/complaints/all?exclude_category=Library";
+      let url = `${API_BASE_URL}/api/complaints/all?exclude_category=Library";
       if (department) url += `&department=${encodeURIComponent(department)}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -62,7 +63,7 @@ const PeonDashboard = () => {
       if (!window.confirm("Are you sure you want to close this complaint? This action cannot be undone.")) return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/complaints/${complaintId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/complaints/${complaintId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -83,7 +84,7 @@ const PeonDashboard = () => {
     setProfileSaving(true);
     const payload = { ...profileData, ...overrides };
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -112,7 +113,7 @@ const PeonDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;

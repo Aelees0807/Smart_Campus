@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+import API_BASE_URL from "../config";
 
 /* ═══════════════════════════════════════════════
    PUPIL — Simple dot that tracks mouse
@@ -205,7 +206,7 @@ const Login = () => {
     setError("");
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/login", {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, password }),

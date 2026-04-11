@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
 import "./FacultyDashboard.css";
 import "./FacultyClassroom.css";
@@ -56,7 +57,7 @@ const FacultyDashboard = () => {
 
   const fetchFacultyProfile = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`);
       const data = await res.json();
       if (data) setProfileData(data);
     } catch(e) {}
@@ -64,12 +65,12 @@ const FacultyDashboard = () => {
 
   const fetchData = async (id) => {
     try {
-      const res = await fetch("http://localhost:5000/api/assignments");
+      const res = await fetch(`${API_BASE_URL}/api/assignments");
       setAssignments(await res.json());
     } catch (e) {}
 
     try {
-      const res = await fetch("http://localhost:5000/api/available-classes");
+      const res = await fetch(`${API_BASE_URL}/api/available-classes");
       setAvailableClasses(await res.json());
     } catch (e) {}
 
@@ -78,7 +79,7 @@ const FacultyDashboard = () => {
     // Fetch counselling students count
     if (id) {
       try {
-        const cRes = await fetch(`http://localhost:5000/api/counsellor-students/${id}`);
+        const cRes = await fetch(`${API_BASE_URL}/api/counsellor-students/${id}`);
         const cData = await cRes.json();
         setCounsellorCount(Array.isArray(cData) ? cData.length : 0);
       } catch (e) {}
@@ -88,28 +89,28 @@ const FacultyDashboard = () => {
   const fetchClassrooms = async (id) => {
     try {
       const fid = id || facultyId;
-      const res = await fetch(`http://localhost:5000/api/classrooms?faculty_id=${fid}`);
+      const res = await fetch(`${API_BASE_URL}/api/classrooms?faculty_id=${fid}`);
       setClassrooms(await res.json());
     } catch (e) {}
   };
 
   const fetchPosts = async (classroomId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/classroom-posts/${classroomId}`);
+      const res = await fetch(`${API_BASE_URL}/api/classroom-posts/${classroomId}`);
       setPosts(await res.json());
     } catch (e) {}
   };
 
   const fetchPeople = async (classroomId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/${classroomId}/people`);
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/${classroomId}/people`);
       setPeople(await res.json());
     } catch (e) {}
   };
 
   const fetchCoTeachers = async (classroomId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/${classroomId}/co-teachers`);
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/${classroomId}/co-teachers`);
       setCoTeachers(await res.json());
     } catch (e) {}
   };
@@ -125,7 +126,7 @@ const FacultyDashboard = () => {
   // --- CREATE CLASSROOM ---
   const handleCreateClass = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/classrooms", {
+    const res = await fetch(`${API_BASE_URL}/api/classrooms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...classForm, faculty_id: facultyId, faculty_name: facultyName }),
@@ -144,7 +145,7 @@ const FacultyDashboard = () => {
     if (!joinCode.trim()) return alert("Please enter a class code");
     setJoining(true);
     try {
-      const res = await fetch("http://localhost:5000/api/classrooms/faculty-join", {
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/faculty-join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -171,7 +172,7 @@ const FacultyDashboard = () => {
   // --- DELETE CLASSROOM ---
   const handleDeleteClass = async (id) => {
     if (!window.confirm("Delete this classroom? All posts and submissions will be lost.")) return;
-    await fetch(`http://localhost:5000/api/classrooms/${id}`, { method: "DELETE" });
+    await fetch(`${API_BASE_URL}/api/classrooms/${id}`, { method: "DELETE" });
     if (activeClassroom?.id === id) setActiveClassroom(null);
     fetchClassrooms();
   };
@@ -181,7 +182,7 @@ const FacultyDashboard = () => {
     if (!window.confirm(`Leave "${cls.name}"? You will no longer be a co-teacher.`)) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/classrooms/${cls.id}/co-teachers/${facultyId}`,
+        `${API_BASE_URL}/api/classrooms/${cls.id}/co-teachers/${facultyId}`,
         { method: "DELETE" }
       );
       const data = await res.json();
@@ -201,7 +202,7 @@ const FacultyDashboard = () => {
     if (!window.confirm(`Remove "${studentName}" from this classroom?`)) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/classrooms/${activeClassroom.id}/students/${studentId}`,
+        `${API_BASE_URL}/api/classrooms/${activeClassroom.id}/students/${studentId}`,
         { method: "DELETE" }
       );
       const data = await res.json();
@@ -220,7 +221,7 @@ const FacultyDashboard = () => {
     if (!window.confirm(`Remove "${coFacultyName}" as co-teacher?`)) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/classrooms/${activeClassroom.id}/co-teachers/${coFacultyId}`,
+        `${API_BASE_URL}/api/classrooms/${activeClassroom.id}/co-teachers/${coFacultyId}`,
         { method: "DELETE" }
       );
       const data = await res.json();
@@ -240,7 +241,7 @@ const FacultyDashboard = () => {
     if (!enrollForm.className) return alert("Please enter a class name");
     setEnrolling(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/${activeClassroom.id}/auto-enroll`, {
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/${activeClassroom.id}/auto-enroll`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ class_name: enrollForm.className, batch: enrollForm.batch })
@@ -267,7 +268,7 @@ const FacultyDashboard = () => {
       const formData = new FormData();
       postFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -296,7 +297,7 @@ const FacultyDashboard = () => {
 
     let res;
     if (editingPostId) {
-      res = await fetch(`http://localhost:5000/api/classroom-posts/${editingPostId}`, {
+      res = await fetch(`${API_BASE_URL}/api/classroom-posts/${editingPostId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -307,7 +308,7 @@ const FacultyDashboard = () => {
         }),
       });
     } else {
-      res = await fetch("http://localhost:5000/api/classroom-posts", {
+      res = await fetch(`${API_BASE_URL}/api/classroom-posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -341,13 +342,13 @@ const FacultyDashboard = () => {
   // --- DELETE POST ---
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Delete this post?")) return;
-    await fetch(`http://localhost:5000/api/classroom-posts/${postId}`, { method: "DELETE" });
+    await fetch(`${API_BASE_URL}/api/classroom-posts/${postId}`, { method: "DELETE" });
     fetchPosts(activeClassroom.id);
   };
 
   // --- VIEW SUBMISSIONS ---
   const openSubmissions = async (post) => {
-    const res = await fetch(`http://localhost:5000/api/submissions/${post.id}`);
+    const res = await fetch(`${API_BASE_URL}/api/submissions/${post.id}`);
     const subs = await res.json();
     setSubmissionsModal({ post, submissions: subs });
   };
@@ -355,7 +356,7 @@ const FacultyDashboard = () => {
   // --- GRADE SUBMISSION ---
   const handleGrade = async (e) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:5000/api/submissions/${gradeModal.submission.id}/grade`, {
+    const res = await fetch(`${API_BASE_URL}/api/submissions/${gradeModal.submission.id}/grade`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grade: parseInt(gradeForm.grade), feedback: gradeForm.feedback }),
@@ -376,7 +377,7 @@ const FacultyDashboard = () => {
     setProfileSaving(true);
     const payload = { ...profileData, ...overrides };
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${facultyId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${facultyId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -405,7 +406,7 @@ const FacultyDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;
