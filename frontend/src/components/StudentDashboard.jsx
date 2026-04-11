@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
 import "./StudentDashboard.css";
 import "./StudentClassroom.css";
@@ -62,30 +63,30 @@ const StudentDashboard = () => {
   // --- FETCH ---
   const fetchUserProfile = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`);
       const data = await res.json();
       if (data) setProfileData(data);
     } catch(e) {}
   };
   const fetchAssignments = async () => {
-    try { const res = await fetch("http://localhost:5000/api/assignments"); setAssignments(await res.json()); } catch (e) {}
+    try { const res = await fetch(`${API_BASE_URL}/api/assignments"); setAssignments(await res.json()); } catch (e) {}
   };
   const fetchMyLeaves = async (id) => {
-    try { const res = await fetch(`http://localhost:5000/api/leaves/${id}`); setMyLeaves(await res.json()); } catch (e) {}
+    try { const res = await fetch(`${API_BASE_URL}/api/leaves/${id}`); setMyLeaves(await res.json()); } catch (e) {}
   };
   const fetchMyComplaints = async (id) => {
-    try { const res = await fetch(`http://localhost:5000/api/complaints/${id}`); setMyComplaints(await res.json()); } catch (e) {}
+    try { const res = await fetch(`${API_BASE_URL}/api/complaints/${id}`); setMyComplaints(await res.json()); } catch (e) {}
   };
   const fetchMyClassrooms = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/student/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/classrooms/student/${id}`);
       setClassrooms(await res.json());
     } catch (e) {}
   };
 
   const fetchCounsellor = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/student-counsellor/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/student-counsellor/${id}`);
       const data = await res.json();
       if (data.success) setCounsellor(data.counsellor);
     } catch (e) {}
@@ -93,14 +94,14 @@ const StudentDashboard = () => {
 
   const fetchPosts = async (classroomId, sid) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/classroom-posts/${classroomId}`);
+      const res = await fetch(`${API_BASE_URL}/api/classroom-posts/${classroomId}`);
       const data = await res.json();
       setPosts(data);
       // Fetch submission status for all assignments
       const id = sid || studentId;
       const subsMap = {};
       for (const post of data.filter(p => p.type === "Assignment")) {
-        const sRes = await fetch(`http://localhost:5000/api/submissions/${post.id}/${id}`);
+        const sRes = await fetch(`${API_BASE_URL}/api/submissions/${post.id}/${id}`);
         const sub = await sRes.json();
         if (sub) subsMap[post.id] = sub;
       }
@@ -119,7 +120,7 @@ const StudentDashboard = () => {
     setProfileSaving(true);
     const payload = { ...profileData, ...overrides };
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${studentId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${studentId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -149,7 +150,7 @@ const StudentDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;
@@ -169,7 +170,7 @@ const StudentDashboard = () => {
   const handleJoin = async (e) => {
     e.preventDefault();
     setJoinLoading(true);
-    const res = await fetch("http://localhost:5000/api/classrooms/join", {
+    const res = await fetch(`${API_BASE_URL}/api/classrooms/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ class_code: joinCode, student_id: studentId, student_name: studentName }),
@@ -194,7 +195,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       submitFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -219,7 +220,7 @@ const StudentDashboard = () => {
       attachments
     };
 
-    const res = await fetch("http://localhost:5000/api/submissions", {
+    const res = await fetch(`${API_BASE_URL}/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -246,7 +247,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       leaveFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -264,10 +265,10 @@ const StudentDashboard = () => {
 
     const payload = { ...leaveForm, studentId, studentName, attachments };
     if (editingLeaveId) {
-      await fetch(`http://localhost:5000/api/leaves/${editingLeaveId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, status: "Pending" }) });
+      await fetch(`${API_BASE_URL}/api/leaves/${editingLeaveId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, status: "Pending" }) });
       alert("Leave Updated & Resubmitted!"); setEditingLeaveId(null);
     } else {
-      await fetch("http://localhost:5000/api/leaves", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      await fetch(`${API_BASE_URL}/api/leaves", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Leave Applied!");
     }
     setLeaveForm({ reason: "", date: "" }); 
@@ -278,7 +279,7 @@ const StudentDashboard = () => {
     if (leaveInput) leaveInput.value = '';
   };
   const editLeave = (leave) => { setLeaveForm({ reason: leave.reason, date: leave.date }); setEditingLeaveId(leave._id); setLeaveFiles([]); };
-  const deleteLeave = async (id) => { if (window.confirm("Delete?")) { await fetch(`http://localhost:5000/api/leaves/${id}`, { method: "DELETE" }); fetchMyLeaves(studentId); } };
+  const deleteLeave = async (id) => { if (window.confirm("Delete?")) { await fetch(`${API_BASE_URL}/api/leaves/${id}`, { method: "DELETE" }); fetchMyLeaves(studentId); } };
 
   // --- COMPLAINTS ---
   const handleComplaintSubmit = async () => {
@@ -290,7 +291,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       complaintFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch("http://localhost:5000/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -308,10 +309,10 @@ const StudentDashboard = () => {
 
     const payload = { ...complaintForm, studentId, attachments };
     if (editingComplaintId) {
-      await fetch(`http://localhost:5000/api/complaints/${editingComplaintId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      await fetch(`${API_BASE_URL}/api/complaints/${editingComplaintId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Updated!"); setEditingComplaintId(null);
     } else {
-      await fetch("http://localhost:5000/api/complaints", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      await fetch(`${API_BASE_URL}/api/complaints", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Submitted!");
     }
     setComplaintForm({ category: "", description: "" }); 
@@ -322,7 +323,7 @@ const StudentDashboard = () => {
     if (fileInput) fileInput.value = '';
   };
   const editComplaint = (c) => { setComplaintForm({ category: c.category, description: c.description }); setEditingComplaintId(c._id); setComplaintFiles([]); };
-  const deleteComplaint = async (id) => { if (window.confirm("Delete?")) { await fetch(`http://localhost:5000/api/complaints/${id}`, { method: "DELETE" }); fetchMyComplaints(studentId); } };
+  const deleteComplaint = async (id) => { if (window.confirm("Delete?")) { await fetch(`${API_BASE_URL}/api/complaints/${id}`, { method: "DELETE" }); fetchMyComplaints(studentId); } };
 
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
 
@@ -731,7 +732,7 @@ const StudentDashboard = () => {
             const unseenLeaves = myLeaves.filter(l => (l.status === "Approved" || l.status === "Rejected") && !l.student_seen);
             if (unseenLeaves.length > 0) {
               try {
-                await fetch(`http://localhost:5000/api/leaves/mark-seen/${studentId}`, { method: "PUT" });
+                await fetch(`${API_BASE_URL}/api/leaves/mark-seen/${studentId}`, { method: "PUT" });
                 fetchMyLeaves(studentId);
               } catch (e) {}
             }

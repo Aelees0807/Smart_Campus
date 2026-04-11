@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
+import API_BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
 
@@ -131,7 +132,7 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users");
+      const res = await fetch(`${API_BASE_URL}/api/users");
       const data = await res.json();
       if (Array.isArray(data)) setUsers(data);
     } catch (err) {
@@ -185,8 +186,8 @@ const AdminDashboard = () => {
 
     try {
       const url = isEditMode 
-        ? `http://localhost:5000/api/users/${formData.custom_id}` 
-        : "http://localhost:5000/api/users";
+        ? `${API_BASE_URL}/api/users/${formData.custom_id}` 
+        : `${API_BASE_URL}/api/users";
       
       const method = isEditMode ? "PUT" : "POST";
 
@@ -216,7 +217,7 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm(`Are you sure you want to delete user ${id}?`)) {
-      await fetch(`http://localhost:5000/api/users/${id}`, { method: "DELETE" });
+      await fetch(`${API_BASE_URL}/api/users/${id}`, { method: "DELETE" });
       fetchUsers();
     }
   };
