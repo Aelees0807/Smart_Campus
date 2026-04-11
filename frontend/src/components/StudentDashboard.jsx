@@ -69,7 +69,7 @@ const StudentDashboard = () => {
     } catch(e) {}
   };
   const fetchAssignments = async () => {
-    try { const res = await fetch(`${API_BASE_URL}/api/assignments"); setAssignments(await res.json()); } catch (e) {}
+    try { const res = await fetch(`${API_BASE_URL}/api/assignments`); setAssignments(await res.json()); } catch (e) {}
   };
   const fetchMyLeaves = async (id) => {
     try { const res = await fetch(`${API_BASE_URL}/api/leaves/${id}`); setMyLeaves(await res.json()); } catch (e) {}
@@ -150,7 +150,7 @@ const StudentDashboard = () => {
     const formData = new FormData();
     formData.append("files", file);
     try {
-      const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+      const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
       const uData = await uRes.json();
       if (uData.success && uData.files.length > 0) {
         const photo_url = uData.files[0].file_url;
@@ -170,7 +170,7 @@ const StudentDashboard = () => {
   const handleJoin = async (e) => {
     e.preventDefault();
     setJoinLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/classrooms/join", {
+    const res = await fetch(`${API_BASE_URL}/api/classrooms/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ class_code: joinCode, student_id: studentId, student_name: studentName }),
@@ -195,7 +195,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       submitFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -220,7 +220,7 @@ const StudentDashboard = () => {
       attachments
     };
 
-    const res = await fetch(`${API_BASE_URL}/api/submissions", {
+    const res = await fetch(`${API_BASE_URL}/api/submissions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -247,7 +247,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       leaveFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -268,7 +268,7 @@ const StudentDashboard = () => {
       await fetch(`${API_BASE_URL}/api/leaves/${editingLeaveId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, status: "Pending" }) });
       alert("Leave Updated & Resubmitted!"); setEditingLeaveId(null);
     } else {
-      await fetch(`${API_BASE_URL}/api/leaves", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      await fetch(`${API_BASE_URL}/api/leaves`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Leave Applied!");
     }
     setLeaveForm({ reason: "", date: "" }); 
@@ -291,7 +291,7 @@ const StudentDashboard = () => {
       const formData = new FormData();
       complaintFiles.forEach(file => formData.append("files", file));
       try {
-        const uRes = await fetch(`${API_BASE_URL}/api/upload", { method: "POST", body: formData });
+        const uRes = await fetch(`${API_BASE_URL}/api/upload`, { method: "POST", body: formData });
         const uData = await uRes.json();
         if (uData.success) {
           attachments = uData.files;
@@ -312,7 +312,7 @@ const StudentDashboard = () => {
       await fetch(`${API_BASE_URL}/api/complaints/${editingComplaintId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Updated!"); setEditingComplaintId(null);
     } else {
-      await fetch(`${API_BASE_URL}/api/complaints", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      await fetch(`${API_BASE_URL}/api/complaints`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       alert("Submitted!");
     }
     setComplaintForm({ category: "", description: "" }); 

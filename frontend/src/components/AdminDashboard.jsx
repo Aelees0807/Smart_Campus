@@ -132,7 +132,7 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users");
+      const res = await fetch(`${API_BASE_URL}/api/users`);
       const data = await res.json();
       if (Array.isArray(data)) setUsers(data);
     } catch (err) {
@@ -187,7 +187,7 @@ const AdminDashboard = () => {
     try {
       const url = isEditMode 
         ? `${API_BASE_URL}/api/users/${formData.custom_id}` 
-        : `${API_BASE_URL}/api/users";
+        : `${API_BASE_URL}/api/users`;
       
       const method = isEditMode ? "PUT" : "POST";
 
